@@ -36,7 +36,7 @@ func Register(gRPC *grpc.Server, auth Auth) {
 	ssov1.RegisterAuthServer(gRPC, &serverAPI{auth: auth})
 }
 
-func (s *serverAPI) Login(ctx context.Context, req *ssov1.LoginRequest) (res *ssov1.LoginResponse, err error) {
+func (s *serverAPI) Login(ctx context.Context, req *ssov1.LoginRequest) (*ssov1.LoginResponse, error) {
 	if err := validateLogin(req); err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (s *serverAPI) Login(ctx context.Context, req *ssov1.LoginRequest) (res *ss
 	}, nil
 }
 
-func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (res *ssov1.RegisterResponse, err error) {
+func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*ssov1.RegisterResponse, error) {
 	if err := validateRegister(req); err != nil {
 		return nil, err
 	}
@@ -65,6 +65,22 @@ func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (r
 
 	return &ssov1.RegisterResponse{
 		UserId: userID,
+	}, nil
+}
+
+func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ssov1.IsAdminResponse, error) {
+	if err := validateIsAdmin(req); err != nil {
+		return nil, err
+	}
+
+	isAdmin, err := s.auth.IsAdmin(ctx, req.GetUserId())
+	if err != nil {
+		// TODO: implement more error handling
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &ssov1.IsAdminResponse{
+		IsAdmin: isAdmin,
 	}, nil
 }
 
@@ -91,6 +107,14 @@ func validateRegister(req *ssov1.RegisterRequest) error {
 
 	if req.GetPassword() == "" {
 		return nil, status.Error(codes.InvalidArgument(), "password is required")
+	}
+
+	return nil
+}
+
+func validateIsAdmin(req *ssov1.IsAdminRequest) error {
+	if req.GetUserId() == emptyValue {
+		return nil, status.Error(codes.InvalidArgument(), "user_id is required")
 	}
 
 	return nil
