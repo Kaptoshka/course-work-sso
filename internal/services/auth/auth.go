@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sso/internal/domain/models"
 	"time"
+
+	"sso/internal/domain/models"
+	"sso/internal/lib/jwt"
+	"sso/internal/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -38,6 +41,8 @@ type AppProvider interface {
 
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidAppID       = errors.New("invalid app id")
+	ErrUserExists         = errors.New("user already exists")
 )
 
 // New returns a new instance of Auth service.
@@ -100,6 +105,15 @@ func (a *Auth) Login(
 	}
 
 	log.Info("user logged in successfully")
+
+	token, err := jwt.GenerateNewToken(user, app, a.tokenTTL)
+	if err != nil {
+		a.log.Error("failed to generate token", slog.Any("error", err))
+
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return token, nil
 }
 
 // RegisterNewUser registers new user in the system and returns userID
@@ -126,6 +140,12 @@ func (a *Auth) RegisterNewUser(
 
 	id, err := a.userSaver.SaveUser(ctx, email, passHash)
 	if err != nil {
+		if errors.Is(err, storage.ErrUserExists) {
+			log.Warn("user already exists", slog.Any("error", err))
+
+			return 0, fmt.Errorf("%s: %w", op, ErrUserExists)
+		}
+
 		log.Error("failed to save user", slog.Any("error", err))
 
 		return 0, fmt.Errorf("%s: %w", op, err)
@@ -141,5 +161,27 @@ func (a *Auth) IsAdmin(
 	ctx context.Context,
 	userID int64,
 ) (bool, error) {
-	panic("not implemented")
+	const op = "auth.IsAdmin"
+
+	log := a.log.With(
+		slog.String("op", op),
+	)
+
+	log.Info("checking if user is admin")
+
+	isAdmin, err := a.userProvider.IsAdmin(ctx, userID)
+	if err != nil {
+		if errors.Is(err, storage.ErrAppNotFound) {
+			log.Warn("user not found", slog.Any("error", err))
+
+			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
+		}
+		log.Error("failed to check if user is admin", slog.Any("error", err))
+
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
+
+	return isAdmin, nil
 }
