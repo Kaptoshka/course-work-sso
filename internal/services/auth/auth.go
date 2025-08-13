@@ -171,7 +171,7 @@ func (a *Auth) IsAdmin(
 
 	isAdmin, err := a.userProvider.IsAdmin(ctx, userID)
 	if err != nil {
-		if errors.Is(err, storage.ErrAppNotFound) {
+		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Warn("user not found", slog.Any("error", err))
 
 			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
