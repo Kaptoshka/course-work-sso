@@ -10,7 +10,6 @@ import (
 	"sso/internal/storage"
 
 	"github.com/mattn/go-sqlite3"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type Storage struct {
@@ -106,7 +105,7 @@ func (s *Storage) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
 	const op = "storage.sqlite.App"
 
-	stmp, err := s.db.Prepare("SELECT id, name FROM apps WHERE id = ?")
+	stmp, err := s.db.Prepare("SELECT id, name, secret FROM apps WHERE id = ?")
 	if err != nil {
 		return models.App{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -115,7 +114,7 @@ func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {
 
 	var app models.App
 
-	err = res.Scan(&app.ID, &app.Name)
+	err = res.Scan(&app.ID, &app.Name, &app.Secret)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.App{}, storage.ErrAppNotFound

@@ -112,7 +112,6 @@ func (a *Auth) Login(
 
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-
 	return token, nil
 }
 
