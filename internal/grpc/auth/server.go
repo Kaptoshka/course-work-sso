@@ -27,8 +27,11 @@ type Auth interface {
 		ctx context.Context,
 		email string,
 		password string,
+		firstName string,
+		lastName string,
+		middleName string,
 	) (userID int64, err error)
-	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	UserRole(ctx context.Context, userID int64) (string, error)
 }
 
 type serverAPI struct {
@@ -63,7 +66,15 @@ func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*
 		return nil, err
 	}
 
-	userID, err := s.auth.RegisterNewUser(ctx, req.GetEmail(), req.GetPassword())
+	userID, err := s.auth.RegisterNewUser(
+		ctx,
+		req.GetEmail(),
+		req.GetPassword(),
+		req.GetFirstName(),
+		req.GetLastName(),
+		req.GetMiddleName(),
+	)
+
 	if err != nil {
 		if errors.Is(err, auth.ErrUserExists) {
 			return nil, status.Error(codes.AlreadyExists, "user already exists")
@@ -77,12 +88,12 @@ func (s *serverAPI) Register(ctx context.Context, req *ssov1.RegisterRequest) (*
 	}, nil
 }
 
-func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ssov1.IsAdminResponse, error) {
-	if err := validateIsAdmin(req); err != nil {
+func (s *serverAPI) UserRole(ctx context.Context, req *ssov1.UserRoleRequest) (*ssov1.UserRoleResponse, error) {
+	if err := validateUserRole(req); err != nil {
 		return nil, err
 	}
 
-	isAdmin, err := s.auth.IsAdmin(ctx, req.GetUserId())
+	userRole, err := s.auth.UserRole(ctx, req.GetUserId())
 	if err != nil {
 		if errors.Is(err, auth.ErrUserNotFound) {
 			return nil, status.Error(codes.NotFound, "user not found")
@@ -90,8 +101,8 @@ func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ss
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &ssov1.IsAdminResponse{
-		IsAdmin: isAdmin,
+	return &ssov1.UserRoleResponse{
+		Role: userRole,
 	}, nil
 }
 
@@ -120,10 +131,18 @@ func validateRegister(req *ssov1.RegisterRequest) error {
 		return status.Error(codes.InvalidArgument, "password is required")
 	}
 
+	if req.GetFirstName() == "" {
+		return status.Error(codes.InvalidArgument, "first_name is required")
+	}
+
+	if req.GetLastName() == "" {
+		return status.Error(codes.InvalidArgument, "last_name is required")
+	}
+
 	return nil
 }
 
-func validateIsAdmin(req *ssov1.IsAdminRequest) error {
+func validateUserRole(req *ssov1.UserRoleRequest) error {
 	if req.GetUserId() == emptyValue {
 		return status.Error(codes.InvalidArgument, "user_id is required")
 	}

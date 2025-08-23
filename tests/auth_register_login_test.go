@@ -26,10 +26,16 @@ func TestRegisterLogin_Login_HappyPath(t *testing.T) {
 
 	email := gofakeit.Email()
 	pass := randomFakePassword()
+	firstName := gofakeit.FirstName()
+	lastName := gofakeit.LastName()
+	middleName := gofakeit.FirstName()
 
 	respReg, err := st.AuthClient.Register(ctx, &ssov1.RegisterRequest{
-		Email:    email,
-		Password: pass,
+		Email:      email,
+		Password:   pass,
+		FirstName:  firstName,
+		LastName:   lastName,
+		MiddleName: middleName,
 	})
 	require.NoError(t, err)
 	assert.NotEmpty(t, respReg.GetUserId())
@@ -68,17 +74,26 @@ func TestRegisterLogin_DuplicateRegistration(t *testing.T) {
 
 	email := gofakeit.Email()
 	pass := randomFakePassword()
+	firstName := gofakeit.FirstName()
+	lastName := gofakeit.LastName()
+	middleName := gofakeit.FirstName()
 
 	respReg, err := st.AuthClient.Register(ctx, &ssov1.RegisterRequest{
-		Email:    email,
-		Password: pass,
+		Email:      email,
+		Password:   pass,
+		FirstName:  firstName,
+		LastName:   lastName,
+		MiddleName: middleName,
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, respReg.GetUserId())
 
 	respReg, err = st.AuthClient.Register(ctx, &ssov1.RegisterRequest{
-		Email:    email,
-		Password: pass,
+		Email:      email,
+		Password:   pass,
+		FirstName:  firstName,
+		LastName:   lastName,
+		MiddleName: middleName,
 	})
 	require.Error(t, err)
 	assert.Empty(t, respReg.GetUserId())
@@ -92,44 +107,83 @@ func TestRegister_FailCases(t *testing.T) {
 		name        string
 		email       string
 		password    string
+		firstName   string
+		lastName    string
+		middleName  string
 		expectedErr string
 	}{
 		{
 			name:        "Register with Empty Password",
 			email:       gofakeit.Email(),
 			password:    "",
+			firstName:   gofakeit.FirstName(),
+			lastName:    gofakeit.LastName(),
+			middleName:  gofakeit.FirstName(),
 			expectedErr: "password is required",
 		},
 		{
 			name:        "Register with Empty Email",
 			email:       "",
 			password:    randomFakePassword(),
+			firstName:   gofakeit.FirstName(),
+			lastName:    gofakeit.LastName(),
+			middleName:  gofakeit.FirstName(),
 			expectedErr: "email is required",
 		},
 		{
-			name:        "Register with Both Empty",
+			name:        "Register with Empty First Name",
+			email:       gofakeit.Email(),
+			password:    randomFakePassword(),
+			firstName:   "",
+			lastName:    gofakeit.LastName(),
+			middleName:  gofakeit.FirstName(),
+			expectedErr: "first_name is required",
+		},
+		{
+			name:        "Register with Empty Last Name",
+			email:       gofakeit.Email(),
+			password:    randomFakePassword(),
+			firstName:   gofakeit.FirstName(),
+			lastName:    "",
+			middleName:  gofakeit.FirstName(),
+			expectedErr: "last_name is required",
+		},
+		{
+			name:        "Register with Empty Name",
+			email:       gofakeit.Email(),
+			password:    randomFakePassword(),
+			firstName:   "",
+			lastName:    "",
+			middleName:  "",
+			expectedErr: "first_name is required",
+		},
+		{
+			name:        "Register with Both Empty Email and Password",
 			email:       "",
 			password:    "",
+			firstName:   gofakeit.FirstName(),
+			lastName:    gofakeit.LastName(),
+			middleName:  gofakeit.FirstName(),
 			expectedErr: "email is required",
 		},
 		{
-			name:        "Register with Both Empty",
+			name:        "Register with Full Empty",
 			email:       "",
 			password:    "",
-			expectedErr: "email is required",
-		},
-		{
-			name:        "Register with Both Empty",
-			email:       "",
-			password:    "",
+			firstName:   "",
+			lastName:    "",
+			middleName:  "",
 			expectedErr: "email is required",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := st.AuthClient.Register(ctx, &ssov1.RegisterRequest{
-				Email:    tt.email,
-				Password: tt.password,
+				Email:      tt.email,
+				Password:   tt.password,
+				FirstName:  tt.firstName,
+				LastName:   tt.lastName,
+				MiddleName: tt.middleName,
 			})
 			require.Error(t, err)
 			require.Contains(t, err.Error(), tt.expectedErr)
@@ -186,8 +240,11 @@ func TestLogin_FailCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := st.AuthClient.Register(ctx, &ssov1.RegisterRequest{
-				Email:    gofakeit.Email(),
-				Password: randomFakePassword(),
+				Email:      gofakeit.Email(),
+				Password:   randomFakePassword(),
+				FirstName:  gofakeit.FirstName(),
+				LastName:   gofakeit.LastName(),
+				MiddleName: gofakeit.FirstName(),
 			})
 			require.NoError(t, err)
 

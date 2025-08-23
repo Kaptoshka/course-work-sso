@@ -28,15 +28,23 @@ func New(storagePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (s *Storage) SaveUser(ctx context.Context, email string, passHash []byte) (int64, error) {
+func (s *Storage) SaveUser(
+	ctx context.Context,
+	email string, passHash []byte,
+	firstName string,
+	lastName string,
+	middleName string,
+) (int64, error) {
 	const op = "storage.sqlite.SaveUser"
 
-	stmp, err := s.db.Prepare("INSERT INTO users (email, pass_hash) VALUES (?, ?)")
+	stmp, err := s.db.Prepare(
+		"INSERT INTO users (email, pass_hash, first_name, last_name, middle_name) VALUES (?, ?, ?, ?, ?)",
+	)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	res, err := stmp.ExecContext(ctx, email, passHash)
+	res, err := stmp.ExecContext(ctx, email, passHash, firstName, lastName, middleName)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 
@@ -59,7 +67,9 @@ func (s *Storage) SaveUser(ctx context.Context, email string, passHash []byte) (
 func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	const op = "storage.sqlite.User"
 
-	stmp, err := s.db.Prepare("SELECT id, email, pass_hash FROM users WHERE email = ?")
+	stmp, err := s.db.Prepare(
+		"SELECT id, email, pass_hash, first_name, last_name, middle_name FROM users WHERE email = ?",
+	)
 	if err != nil {
 		return models.User{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -67,7 +77,7 @@ func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	res := stmp.QueryRowContext(ctx, email)
 
 	var user models.User
-	err = res.Scan(&user.ID, &user.Email, &user.PassHash)
+	err = res.Scan(&user.ID, &user.Email, &user.PassHash, &user.FirstName, &user.LastName, &user.MiddleName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.User{}, storage.ErrUserNotFound
@@ -78,28 +88,30 @@ func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 	return user, nil
 }
 
-// IsAdmin returns TRUE if user is admin and FALSE if not
-func (s *Storage) IsAdmin(ctx context.Context, userID int64) (bool, error) {
-	const op = "storage.sqlite.IsAdmin"
+// UserRole returns role of the user
+func (s *Storage) UserRole(ctx context.Context, userID int64) (string, error) {
+	const op = "storage.sqlite.UserRole"
 
-	stmp, err := s.db.Prepare("SELECT is_admin FROM users WHERE id = ?")
+	stmp, err := s.db.Prepare(
+		"SELECT r.role FROM roles r INNER JOIN enrollments en ON r.id = en.role_id WHERE en.user_id = ?",
+	)
 	if err != nil {
-		return false, fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	res := stmp.QueryRowContext(ctx, userID)
 
-	var isAdmin bool
-	err = res.Scan(&isAdmin)
+	var role string
+	err = res.Scan(&role)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return false, storage.ErrUserNotFound
+			return "", storage.ErrUserNotFound
 		}
 
-		return false, fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return isAdmin, nil
+	return role, nil
 }
 
 func (s *Storage) App(ctx context.Context, appID int) (models.App, error) {

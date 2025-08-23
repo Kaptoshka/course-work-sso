@@ -27,12 +27,15 @@ type UserSaver interface {
 		ctx context.Context,
 		email string,
 		passHash []byte,
+		firstName string,
+		lastName string,
+		middleName string,
 	) (uid int64, err error)
 }
 
 type UserProvider interface {
 	User(ctx context.Context, email string) (models.User, error)
-	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	UserRole(ctx context.Context, userID int64) (string, error)
 }
 
 type AppProvider interface {
@@ -82,6 +85,8 @@ func (a *Auth) Login(
 	log.Info("attempting to login user")
 
 	user, err := a.userProvider.User(ctx, email)
+	a.log.Debug("user contains", slog.Any("user", user))
+	a.log.Debug("error is", slog.Any("error", err))
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			a.log.Warn("user not found", slog.Any("error", err))
@@ -101,6 +106,8 @@ func (a *Auth) Login(
 	}
 
 	app, err := a.appProvider.App(ctx, appID)
+	a.log.Debug("app contains", slog.Any("app", app))
+	a.log.Debug("error is", slog.Any("error", err))
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -122,6 +129,9 @@ func (a *Auth) RegisterNewUser(
 	ctx context.Context,
 	email string,
 	password string,
+	firstName string,
+	lastName string,
+	middleName string,
 ) (int64, error) {
 	const op = "auth.RegisterNewUser"
 
@@ -138,7 +148,7 @@ func (a *Auth) RegisterNewUser(
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	id, err := a.userSaver.SaveUser(ctx, email, passHash)
+	id, err := a.userSaver.SaveUser(ctx, email, passHash, firstName, lastName, middleName)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserExists) {
 			log.Warn("user already exists", slog.Any("error", err))
@@ -156,12 +166,12 @@ func (a *Auth) RegisterNewUser(
 	return id, nil
 }
 
-// IsAdmin checks if user with given ID is an admin.
-func (a *Auth) IsAdmin(
+// UserRole returns role of user with given ID.
+func (a *Auth) UserRole(
 	ctx context.Context,
 	userID int64,
-) (bool, error) {
-	const op = "auth.IsAdmin"
+) (string, error) {
+	const op = "auth.UserRole"
 
 	log := a.log.With(
 		slog.String("op", op),
@@ -169,19 +179,19 @@ func (a *Auth) IsAdmin(
 
 	log.Info("checking if user is admin")
 
-	isAdmin, err := a.userProvider.IsAdmin(ctx, userID)
+	userRole, err := a.userProvider.UserRole(ctx, userID)
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			log.Warn("user not found", slog.Any("error", err))
 
-			return false, fmt.Errorf("%s: %w", op, ErrInvalidAppID)
+			return "", fmt.Errorf("%s: %w", op, ErrInvalidAppID)
 		}
-		log.Error("failed to check if user is admin", slog.Any("error", err))
+		log.Error("failed to check role of the user", slog.Any("error", err))
 
-		return false, fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
+	log.Info("checked user role", slog.String("user_role", userRole))
 
-	return isAdmin, nil
+	return userRole, nil
 }
