@@ -3,7 +3,7 @@ module sso
 go 1.24.0
 
 require (
-	github.com/Kaptoshka/course-work-protos v0.0.3
+	github.com/Kaptoshka/course-work-protos v0.0.4
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.18.3
@@ -11,7 +11,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.31
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.41.0
-	google.golang.org/grpc v1.74.2
+	google.golang.org/grpc v1.75.0
 )
 
 require (
@@ -26,7 +26,7 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
