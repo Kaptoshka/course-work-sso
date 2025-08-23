@@ -10,9 +10,11 @@ tasks:
   run:
     aliases:
       - run
+      - run-local
+      - local
     desc: "Run the sso application"
     cmds:
-      - go run ./cmd/sso/main.go
+      - go run ./cmd/sso/main.go --config=./config/local.yaml
   test:
     aliases:
       - test-migrate
