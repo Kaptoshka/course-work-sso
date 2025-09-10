@@ -36,6 +36,7 @@ type UserSaver interface {
 type UserProvider interface {
 	User(ctx context.Context, email string) (models.User, error)
 	UserRole(ctx context.Context, userID int64) (string, error)
+	UserExists(ctx context.Context, userID int64) (bool, error)
 }
 
 type AppProvider interface {
@@ -192,4 +193,27 @@ func (a *Auth) UserRole(
 	log.Info("checked user role", slog.String("user_role", userRole))
 
 	return userRole, nil
+}
+
+func (a *Auth) UserExists(
+	ctx context.Context,
+	userID int64,
+) (bool, error) {
+	const op = "services.auth.UserExists"
+
+	log := a.log.With(
+		slog.String("op", op),
+	)
+
+	log.Info("checking if user exists")
+
+	userExists, err := a.userProvider.UserExists(ctx, userID)
+	if err != nil {
+		log.Error("failed to check if user exists", slog.Any("error", err))
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	log.Info("checked if user exists", slog.Bool("user_exists", userExists))
+
+	return userExists, nil
 }

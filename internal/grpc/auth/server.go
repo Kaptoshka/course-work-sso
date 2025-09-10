@@ -32,6 +32,7 @@ type Auth interface {
 		middleName string,
 	) (userID int64, err error)
 	UserRole(ctx context.Context, userID int64) (string, error)
+	UserExists(ctx context.Context, userID int64) (bool, error)
 }
 
 type serverAPI struct {
@@ -106,6 +107,24 @@ func (s *serverAPI) UserRole(ctx context.Context, req *ssov1.UserRoleRequest) (*
 	}, nil
 }
 
+func (s *serverAPI) UserExists(ctx context.Context, req *ssov1.UserExistsRequest) (*ssov1.UserExistsResponse, error) {
+	if err := validateUserExists(req); err != nil {
+		return nil, err
+	}
+
+	isExists, err := s.auth.UserExists(ctx, req.GetUserId())
+	if err != nil {
+		if errors.Is(err, auth.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &ssov1.UserExistsResponse{
+		Exists: isExists,
+	}, nil
+}
+
 func validateLogin(req *ssov1.LoginRequest) error {
 	if req.GetEmail() == "" {
 		return status.Error(codes.InvalidArgument, "email is required")
@@ -143,6 +162,14 @@ func validateRegister(req *ssov1.RegisterRequest) error {
 }
 
 func validateUserRole(req *ssov1.UserRoleRequest) error {
+	if req.GetUserId() == emptyValue {
+		return status.Error(codes.InvalidArgument, "user_id is required")
+	}
+
+	return nil
+}
+
+func validateUserExists(req *ssov1.UserExistsRequest) error {
 	if req.GetUserId() == emptyValue {
 		return status.Error(codes.InvalidArgument, "user_id is required")
 	}
