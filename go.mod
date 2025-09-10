@@ -3,7 +3,7 @@ module sso
 go 1.24.0
 
 require (
-	github.com/Kaptoshka/course-work-protos v0.0.4
+	github.com/Kaptoshka/course-work-protos v0.0.5
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.18.3

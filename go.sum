@@ -3,6 +3,8 @@ github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/Kaptoshka/course-work-protos v0.0.4 h1:o0N75Uy3hvhqYnA3lTYOmlBa+37WNK0rWrBWFWbaqek=
 github.com/Kaptoshka/course-work-protos v0.0.4/go.mod h1:EiLYv8yNaGpFbzxqgaN+JD7WC6z2q4c/i02YEzAeGPU=
+github.com/Kaptoshka/course-work-protos v0.0.5 h1:ctML3R3hV1PJBElv91Il3acmlsnrnHWKLBEBKBZ5Vj8=
+github.com/Kaptoshka/course-work-protos v0.0.5/go.mod h1:EiLYv8yNaGpFbzxqgaN+JD7WC6z2q4c/i02YEzAeGPU=
 github.com/brianvoe/gofakeit v3.18.0+incompatible h1:wDOmHc9DLG4nRjUVVaxA+CEglKOW72Y5+4WNxUIkjM8=
 github.com/brianvoe/gofakeit v3.18.0+incompatible/go.mod h1:kfwdRA90vvNhPutZWfH7WPaDzUjz+CZFqG+rPkOjGOc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
