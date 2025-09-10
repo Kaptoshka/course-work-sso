@@ -5,6 +5,8 @@ github.com/Kaptoshka/course-work-protos v0.0.4 h1:o0N75Uy3hvhqYnA3lTYOmlBa+37WNK
 github.com/Kaptoshka/course-work-protos v0.0.4/go.mod h1:EiLYv8yNaGpFbzxqgaN+JD7WC6z2q4c/i02YEzAeGPU=
 github.com/Kaptoshka/course-work-protos v0.0.5 h1:ctML3R3hV1PJBElv91Il3acmlsnrnHWKLBEBKBZ5Vj8=
 github.com/Kaptoshka/course-work-protos v0.0.5/go.mod h1:EiLYv8yNaGpFbzxqgaN+JD7WC6z2q4c/i02YEzAeGPU=
+github.com/Kaptoshka/course-work-protos v0.0.6 h1:M12bF7Td3fj34XtNp4aLxOguBbsAsRKNMGpHA+24eMs=
+github.com/Kaptoshka/course-work-protos v0.0.6/go.mod h1:EiLYv8yNaGpFbzxqgaN+JD7WC6z2q4c/i02YEzAeGPU=
 github.com/brianvoe/gofakeit v3.18.0+incompatible h1:wDOmHc9DLG4nRjUVVaxA+CEglKOW72Y5+4WNxUIkjM8=
 github.com/brianvoe/gofakeit v3.18.0+incompatible/go.mod h1:kfwdRA90vvNhPutZWfH7WPaDzUjz+CZFqG+rPkOjGOc=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
