@@ -76,7 +76,7 @@ func (a *Auth) Login(
 	password string,
 	appID int,
 ) (string, error) {
-	const op = "auth.Login"
+	const op = "services.auth.Login"
 
 	log := a.log.With(
 		slog.String("op", op),
@@ -85,8 +85,6 @@ func (a *Auth) Login(
 	log.Info("attempting to login user")
 
 	user, err := a.userProvider.User(ctx, email)
-	a.log.Debug("user contains", slog.Any("user", user))
-	a.log.Debug("error is", slog.Any("error", err))
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			a.log.Warn("user not found", slog.Any("error", err))
@@ -133,7 +131,7 @@ func (a *Auth) RegisterNewUser(
 	lastName string,
 	middleName string,
 ) (int64, error) {
-	const op = "auth.RegisterNewUser"
+	const op = "services.auth.RegisterNewUser"
 
 	log := a.log.With(
 		slog.String("op", op),
@@ -171,7 +169,7 @@ func (a *Auth) UserRole(
 	ctx context.Context,
 	userID int64,
 ) (string, error) {
-	const op = "auth.UserRole"
+	const op = "services.auth.UserRole"
 
 	log := a.log.With(
 		slog.String("op", op),

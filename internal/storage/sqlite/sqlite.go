@@ -30,7 +30,8 @@ func New(storagePath string) (*Storage, error) {
 
 func (s *Storage) SaveUser(
 	ctx context.Context,
-	email string, passHash []byte,
+	email string,
+	passHash []byte,
 	firstName string,
 	lastName string,
 	middleName string,
@@ -86,6 +87,31 @@ func (s *Storage) User(ctx context.Context, email string) (models.User, error) {
 		return models.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return user, nil
+}
+
+// UserExists returns true if user exists
+func (s *Storage) UserExists(ctx context.Context, userID int64) (bool, error) {
+	const op = "storage.sqlite.UserExists"
+
+	stmp, err := s.db.Prepare(
+		"SELECT 1 FROM users WHERE id = ? LIMIT 1",
+	)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	row := stmp.QueryRowContext(ctx, userID)
+
+	err = row.Scan()
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return true, nil
 }
 
 // UserRole returns role of the user
